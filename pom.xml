@@ -10,6 +10,8 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>ga-eureka</module>
+        <module>ga-gateway</module>
+        <module>commons</module>
     </modules>
 
     <!-- 可以集中定义依赖资源的版本信息 -->
