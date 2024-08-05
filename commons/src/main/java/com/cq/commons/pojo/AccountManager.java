@@ -13,7 +13,7 @@ import lombok.Setter;
 public class AccountManager extends BaseModel {
 
     // 主键
-    private Integer id;
+    private String id;
     // 用户名
     private String username;
     // 昵称

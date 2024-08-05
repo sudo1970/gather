@@ -33,7 +33,7 @@ mybatis:
 
 service:
   name:
-    as-oauth-server: http://ga-oauth2-server/
+    ga-oauth-server: http://ga-oauth2-server/
 
 logging:
   pattern:

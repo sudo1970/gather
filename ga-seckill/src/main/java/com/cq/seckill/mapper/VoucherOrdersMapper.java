@@ -16,13 +16,13 @@ public interface VoucherOrdersMapper {
             " is_valid from t_voucher_orders where fk_diner_id = #{dinerId} " +
             " and fk_voucher_id = #{voucherId} and is_valid = 1 and status between 0 and 1 ")
     VoucherOrders findDinerOrder(@Param("dinerId") Integer dinerId,
-                                 @Param("voucherId") Integer voucherId);
+                                 @Param("voucherId") String voucherId);
 
     // 新增代金券订单
     @Insert("insert into t_voucher_orders (fk_voucher_id, fk_diner_id, " +
-            " status, fk_seckill_id, order_type, create_date, update_date,  is_valid)" +
-            " values (#{fkVoucherId}, #{fkDinerId}, #{status}, #{fkSeckillId}, " +
-            " #{orderType}, now(), now(), 1)")
+            " status, fk_seckill_id, order_type, create_date, update_date,  is_valid, order_no)" +
+            " values (#{fkVoucherId}, #{fkDinerId}, #{status}, #{fkSeckillId}," +
+            " #{orderType}, now(), now(), 1, #{orderNo})")
     int save(VoucherOrders voucherOrders);
 
 }

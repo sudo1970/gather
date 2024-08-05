@@ -1,6 +1,7 @@
 package com.cq.seckill.service;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.IdUtil;
 import com.cq.commons.constant.ApiConstant;
 import com.cq.commons.constant.RedisKeyConstant;
 import com.cq.commons.exception.ParameterException;
@@ -34,7 +35,7 @@ public class SeckillService {
     private SeckillVouchersMapper seckillVouchersMapper;
     @Resource
     private VoucherOrdersMapper voucherOrdersMapper;
-    @Value("${service.name.as-oauth-server}")
+    @Value("${service.name.ga-oauth-server}")
     private String oauthServerName;
     @Resource
     private RestTemplate restTemplate;
@@ -42,8 +43,6 @@ public class SeckillService {
     private RedisTemplate redisTemplate;
     @Resource
     private DefaultRedisScript defaultRedisScript;
-//    @Resource
-//    private RedisLock redisLock;
     @Resource
     private RedissonClient redissonClient;
 
@@ -60,13 +59,6 @@ public class SeckillService {
         AssertUtil.isTrue(voucherId == null || voucherId < 0, "请选择需要抢购的代金券");
         AssertUtil.isNotEmpty(accessToken, "请登录");
 
-        // 注释原始的 关系型数据库 的流程
-        // 判断此代金券是否加入抢购
-        // SeckillVouchers seckillVouchers = seckillVouchersMapper.selectVoucher(voucherId);
-        // AssertUtil.isTrue(seckillVouchers == null, "该代金券并未有抢购活动");
-        // 判断是否有效
-        // AssertUtil.isTrue(seckillVouchers.getIsValid() == 0, "该活动已结束");
-
         // 采用 Redis
         String key = RedisKeyConstant.seckill_vouchers.getKey() + voucherId;
         Map<String, Object> map = redisTemplate.opsForHash().entries(key);
@@ -80,7 +72,6 @@ public class SeckillService {
         AssertUtil.isTrue(seckillVouchers.getAmount() < 1, "该券已经卖完了");
         // 获取登录用户信息
         String url = oauthServerName + "user/me?access_token={accessToken}";
-        log.info("url:::{}", url);
         ResultInfo resultInfo = restTemplate.getForObject(url, ResultInfo.class, accessToken);
         if (resultInfo.getCode() != ApiConstant.SUCCESS_CODE) {
             resultInfo.setPath(path);
@@ -94,11 +85,6 @@ public class SeckillService {
                 seckillVouchers.getFkVoucherId());
         AssertUtil.isTrue(order != null, "该用户已抢到该代金券，无需再抢");
 
-        // 注释原始的 关系型数据库 的流程
-        // 扣库存
-        // int count = seckillVouchersMapper.stockDecrease(seckillVouchers.getId());
-        // AssertUtil.isTrue(count == 0, "该券已经卖完了");
-
         // 使用 Redis 锁一个账号只能购买一次
         String lockName = RedisKeyConstant.lock_key.getKey()
                 + SignInAcctInfo.getId() + ":" + voucherId;
@@ -106,7 +92,6 @@ public class SeckillService {
 
         // Redisson 分布式锁
         RLock lock = redissonClient.getLock(lockName);
-
         try {
             // Redisson 分布式锁处理
             boolean isLocked = lock.tryLock(expireTime, TimeUnit.MILLISECONDS);
@@ -114,40 +99,35 @@ public class SeckillService {
                 // 下单
                 VoucherOrders voucherOrders = new VoucherOrders();
                 voucherOrders.setFkDinerId(SignInAcctInfo.getId());
-                // Redis 中不需要维护外键信息
-                // voucherOrders.setFkSeckillId(seckillVouchers.getId());
+                voucherOrders.setFkSeckillId(seckillVouchers.getId());
                 voucherOrders.setFkVoucherId(seckillVouchers.getFkVoucherId());
-//                String orderNo = IdUtil.getSnowflake(1, 1).nextIdStr();
-//                voucherOrders.setOrderNo(orderNo);
+                String orderNo = IdUtil.getSnowflake(1, 1).nextIdStr();
+                log.info("orderNo:::{}", orderNo);
+                voucherOrders.setOrderNo(orderNo);
                 voucherOrders.setOrderType(1);
                 voucherOrders.setStatus(0);
                 long count = voucherOrdersMapper.save(voucherOrders);
                 AssertUtil.isTrue(count == 0, "用户抢购失败");
 
-                // 采用 Redis
-                // 扣库存
-                // count = redisTemplate.opsForHash().increment(key, "amount", -1);
-                // AssertUtil.isTrue(count < 0, "该券已经卖完了");
+                // 扣库存 --DB
+//                int cnt = seckillVouchersMapper.stockDecrease(seckillVouchers.getId());
+//                AssertUtil.isTrue(cnt == 0, "该券已经卖完了");
 
-                // 采用 Redis + Lua 解决问题
-                // 扣库存
+                // 扣库存 --redis + lua脚本
                 List<String> keys = new ArrayList<>();
                 keys.add(key);
                 keys.add("amount");
                 Long amount = (Long) redisTemplate.execute(defaultRedisScript, keys);
-                AssertUtil.isTrue(amount == null || amount < 1, "该券已经卖完了");
+                AssertUtil.isTrue(amount < 0, "该券已经卖完了");
             }
         } catch (Exception e) {
+            log.info("e:::", e);
             // 手动回滚事务
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            // 自定义 Redis 解锁
-            // redisLock.unlock(lockName, lockKey);
 
             // Redisson 解锁
             lock.unlock();
-            if (e instanceof ParameterException) {
-                return ResultInfoUtil.buildError(0, "该券已经卖完了", path);
-            }
+            return ResultInfoUtil.buildError(0, "抢券发生异常:" + e.getMessage(), path);
         }
         return ResultInfoUtil.buildSuccess(path, "抢购成功");
     }
@@ -169,6 +149,7 @@ public class SeckillService {
         AssertUtil.isTrue(!map.isEmpty() && (int)map.get("amount") > 0, "该券已经拥有了抢购活动");
 
         // 插入redis
+        seckillVouchers.setId(IdUtil.getSnowflake(1, 1).nextIdStr());
         seckillVouchers.setIsValid(1);
         seckillVouchers.setCreateDate(now);
         seckillVouchers.setUpdateDate(now);

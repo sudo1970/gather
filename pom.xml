@@ -13,7 +13,7 @@
         <module>ga-gateway</module>
         <module>commons</module>
         <module>ga-oauth2-server</module>
-        <module>ga-user</module>
+        <module>ga-account-manger</module>
         <module>ga-seckill</module>
     </modules>
 
