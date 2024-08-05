@@ -13,7 +13,7 @@ import java.util.Date;
 @Setter
 public class BaseModel implements Serializable {
 
-    private Integer id;
+    private String id;
     private Date createDate;
     private Date updateDate;
     private int isValid;

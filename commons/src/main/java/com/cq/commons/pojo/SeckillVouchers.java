@@ -16,7 +16,7 @@ import java.util.Date;
 public class SeckillVouchers extends BaseModel {
 
     @ApiModelProperty("代金券外键")
-    private Integer fkVoucherId;
+    private String fkVoucherId;
     @ApiModelProperty("数量")
     private int amount;
     @ApiModelProperty("抢购开始时间")

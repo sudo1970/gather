@@ -12,9 +12,9 @@ import lombok.Setter;
 public class VoucherOrders extends BaseModel {
 
     @ApiModelProperty("订单编号")
-    private int orderNo;
+    private String orderNo;
     @ApiModelProperty("代金券")
-    private Integer fkVoucherId;
+    private String fkVoucherId;
     @ApiModelProperty("下单用户")
     private Integer fkDinerId;
     @ApiModelProperty("生成qrcode")
@@ -26,6 +26,6 @@ public class VoucherOrders extends BaseModel {
     @ApiModelProperty("订单类型 0=正常订单 1=抢购订单")
     private int orderType;
     @ApiModelProperty("抢购订单的外键")
-    private int fkSeckillId;
+    private String fkSeckillId;
 
 }
