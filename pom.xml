@@ -35,7 +35,9 @@
     <!-- 集中定义依赖，不引入 -->
     <dependencyManagement>
         <dependencies>
-            <!-- spring boot 依赖 -->
+            <!-- spri
+
+            ng boot 依赖 -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
