@@ -1,8 +1,8 @@
 package com.cq.accountmanger.controller;
 
+import com.cq.accountmanger.service.UserService;
 import com.cq.commons.dto.AccountManagerDTO;
 import com.cq.commons.model.domain.ResultInfo;
-import com.cq.accountmanger.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

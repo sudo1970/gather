@@ -16,7 +16,6 @@ spring:
     host: 192.168.32.128
     timeout: 3000
     password: 123456
-
 # Oauth2 客户端信息
 oauth2:
   client:
