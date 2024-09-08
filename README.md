@@ -27,8 +27,8 @@
 
  业务模块
  1、用户中心模块（as-user）
-    添加秒杀功能
-   添加使用easyexcel导出excel文件功能
+    添加秒杀功能;
+   添加使用easyexcel导出excel文件功能;
    
  2、任务营销中心模块（as-marketing-center）
  3、营销任务下单模块（as-task-order）
