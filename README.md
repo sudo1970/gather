@@ -5,11 +5,13 @@
   1、ga-eureka (注册中心)
   
   2、ga-gateway （网关）
+  
   整合sentinel实现限流功能；
   
   3、commons （常量 + 共用model + 统一异常处理）
 
   4、ga-account-manger （用户中心）
+  
   添加使用easyexcel导出excel文件功能；
   
   5、ga-oauth2-server（权限模块）
