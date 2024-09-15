@@ -24,13 +24,15 @@ spring:
             - Path=/seckill/**
           filters:
             - StripPrefix=1
+    sentinel:
+      transport:
+        dashboard: 127.0.0.1:8780 # Sentinel 控制台地址
 secure:
   ignore:
     urls: # 配置白名单路径
       - /actuator/**
       - /auth/oauth/**
       - /seckill/**
-
 # 配置 Eureka Server 注册中心
 eureka:
   instance:
