@@ -1,1 +1,4 @@
 /.idea/
+/ga-gateway/target/
+
+/ga-account-manger/target/
