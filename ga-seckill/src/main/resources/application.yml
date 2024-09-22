@@ -17,6 +17,18 @@ spring:
     timeout: 3000
     database: 1
     password: 123456
+  cloud:
+    stream:
+      rocketmq:
+        binder:
+          name-server: 192.168.32.128:9876
+      bindings:
+        output:
+          destination: order-topic
+          group: broker-a
+        input:
+          destination: order-topic
+          group: broker-a
 
 # 配置 Eureka Server 注册中心
 eureka:
